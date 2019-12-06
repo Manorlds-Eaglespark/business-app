@@ -1,7 +1,7 @@
 import os
 from flask_script import Manager # class for handling a set of commands
 from flask_migrate import Migrate, MigrateCommand
-from app import db, app
+from app.views import db, app
 from app.models.user import User
 
 migrate = Migrate(app, db)

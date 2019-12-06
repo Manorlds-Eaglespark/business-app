@@ -9,9 +9,8 @@ class User(Model.db):
     role = db.Column(db.String(20))
     time_added = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    def __init__(self):
+    def __init__(self, name, password, email, role):
         self.name = name
         self.password = password
         self.email = email
         self.role = role
-        self.time_added
