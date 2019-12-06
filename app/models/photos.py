@@ -1,8 +1,9 @@
+from app.views import db
 
-class Photo(Model.db):
+class Photo(db.Model):
     __tablename__ = 'photos'
     id = db.Column(db.Integer, primary_key=True)
-    property_id = db.Column(db.Integer))
+    property_id = db.Column(db.Integer)
     photo_1 = db.Column(db.String(255))
     photo_2 = db.Column(db.String(255))
     photo_3 = db.Column(db.String(255))
