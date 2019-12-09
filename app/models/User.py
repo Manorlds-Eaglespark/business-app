@@ -1,6 +1,7 @@
 import jwt
 from flask_bcrypt import Bcrypt
 from shared_db import db
+from shared_db import ma
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -26,3 +27,10 @@ class User(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+class UserSchema(ma.Schema):
+    class Meta:
+        fields = ("name", "email", "thumbnail", "role", "time_added")
+
+user_schema = UserSchema()
+users_schema = UserSchema(many=True)

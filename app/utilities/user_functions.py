@@ -1,6 +1,10 @@
+import os
+import jwt
+from flask_bcrypt import Bcrypt
 from flask import make_response, request, jsonify, json
 from app.models.user import User
 from app.views import db
+from datetime import datetime, timedelta
 
 class User_Functions:
     
@@ -12,18 +16,19 @@ class User_Functions:
         return {"message": "Name should have atleast 4 characters"}
 
     @staticmethod
-    def password_is_valid(given_password, password):
+    def user_email_verified(given_password, password):
         return Bcrypt().check_password_hash(password, given_password)
 
     @staticmethod
-    def generate_token(user_id):
+    def generate_token(user_id, role):
         """ Generates the access token"""
         try:
             # set up a payload with an expiration time
             payload = {
                 'exp': datetime.utcnow() + timedelta(minutes=15),
                 'iat': datetime.utcnow(),
-                'sub': user_id
+                'sub': user_id,
+                'rle': role
             }
             # create the byte string token using the payload and the SECRET key
             jwt_string = jwt.encode(
