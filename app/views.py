@@ -9,6 +9,7 @@ from shared_db import db, ma
 from app.models.user import User
 from app.utilities.user_functions import User_Functions
 from app.models.user import user_schema
+from app.utilities.register_validation import Register_Validation
                 
 def create_app(config_name):
     app = FlaskAPI(__name__, instance_relative_config=True)
@@ -32,11 +33,17 @@ def create_app(config_name):
         name = request.get_json()['name']
         password = request.get_json()['password']
         email = request.get_json()['email']
-        role = 'buyer'
+        role = request.get_json()['role']
         thumbnail = request.get_json()['thumbnail']
-        new_user = User(name, password, email, thumbnail, role)
-        new_user.save()
-        return make_response(jsonify({"message": "User successfully created!"})), 201
+        verify_data = Register_Validation({"name":name, "password":password, "email":email, "thumbnail":thumbnail, "role":role})
+        is_verified = verify_data.check_input()
+        if is_verified[0] == 200:
+            new_user = User(name, password, email, thumbnail, role)
+            new_user.save()
+            return make_response(jsonify({"message": "User successfully created!"})), 201
+        else:
+            return make_response(jsonify({"message":is_verified[1]})), is_verified[0]
+
 
     @app.route('/api/v1/user/login', methods=['POST'])
     def login_registered_user():
@@ -51,6 +58,6 @@ def create_app(config_name):
                 return make_response(jsonify({"message": "You entered a wrong password"})),200
         else:
             return make_response(jsonify({"message": "Wrong credentials, try again"})),200
-            
+
 
     return app
