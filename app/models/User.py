@@ -1,4 +1,6 @@
-from app.views import db
+import jwt
+from flask_bcrypt import Bcrypt
+from shared_db import db
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -10,8 +12,17 @@ class User(db.Model):
     role = db.Column(db.String(20))
     time_added = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    def __init__(self, name, password, email, role):
+    def __init__(self, name, password, email, thumbnail, role):
         self.name = name
-        self.password = password
+        self.password = Bcrypt().generate_password_hash(password).decode()
         self.email = email
+        self.thumbnail = thumbnail
         self.role = role
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()

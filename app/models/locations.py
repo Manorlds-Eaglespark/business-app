@@ -1,4 +1,4 @@
-from app.views import db
+from shared_db import db
 from app.models.property import Property
 
 class Location(db.Model):

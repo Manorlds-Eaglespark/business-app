@@ -1,4 +1,4 @@
-from app.views import db
+from shared_db import db
 from app.models.user import User
 
 class Company(db.Model):
