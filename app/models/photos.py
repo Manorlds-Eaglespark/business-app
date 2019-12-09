@@ -1,9 +1,10 @@
 from app.views import db
+from app.models.property import Property
 
 class Photo(db.Model):
     __tablename__ = 'photos'
     id = db.Column(db.Integer, primary_key=True)
-    property_id = db.Column(db.Integer)
+    property_id = db.Column(db.Integer,db.ForeignKey(Property.id))
     photo_1 = db.Column(db.String(255))
     photo_2 = db.Column(db.String(255))
     photo_3 = db.Column(db.String(255))
@@ -11,6 +12,7 @@ class Photo(db.Model):
     photo_5 = db.Column(db.String(255))
     photo_6 = db.Column(db.String(255))
     photo_7 = db.Column(db.String(255))
+    property_ = db.relationship('Property', backref='photo')
 
     def __init__(self, property_id, photo_1, photo_2,
          photo_3, photo_4, photo_5, photo_6, photo_7):
