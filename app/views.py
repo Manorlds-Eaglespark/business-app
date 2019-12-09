@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from instance.config import app_config
 from shared_db import db
 from app.models.user import User
-from app.helpers.user_functions import UserHelper
+from app.utilities.user_functions import User
                 
 def create_app(config_name):
     app = FlaskAPI(__name__, instance_relative_config=True)
@@ -32,13 +32,10 @@ def create_app(config_name):
         email = request.get_json()['email']
         role = 'buyer'
         thumbnail = request.get_json()['thumbnail']
-        UserHelper.validate_user()
-        # UserHelper.validate_user(name, email, password, thumbnail, role)
-        # new_user = User(name, password, email, thumbnail, role)
-        # new_user.save()
-        # response = {
-        #     "message": "User successfully created!"}
-        # return make_response(jsonify(response)), 201
-        return {"bn":1}
+        new_user = User(name, password, email, thumbnail, role)
+        new_user.save()
+        response = {
+            "message": "User successfully created!"}
+        return make_response(jsonify(response)), 201
 
     return app

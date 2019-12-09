@@ -2,14 +2,14 @@ from flask import make_response, request, jsonify, json
 from app.models.user import User
 from app.views import db
 
-class UserHelper:
+class User_Functions:
     
     @staticmethod
     def validate_user():
         # if not (name and email and password and thumbnail and role):
         #     return make_response({"message": "something missing!"}), 400
         # if len(name) < 3:
-        return make_response(jsonify({"message": "Name should have atleast 4 characters"})), 400
+        return {"message": "Name should have atleast 4 characters"}
 
     @staticmethod
     def password_is_valid(given_password, password):
