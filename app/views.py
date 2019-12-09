@@ -7,9 +7,12 @@ from flask_marshmallow import Marshmallow
 from instance.config import app_config
 from shared_db import db, ma
 from app.models.user import User
+from app.models.companies import Company
 from app.utilities.user_functions import User_Functions
 from app.models.user import user_schema
+from app.models.user import users_schema
 from app.utilities.register_validation import Register_Validation
+from app.utilities.company_validation import Company_Validation
                 
 def create_app(config_name):
     app = FlaskAPI(__name__, instance_relative_config=True)
@@ -58,6 +61,29 @@ def create_app(config_name):
                 return make_response(jsonify({"message": "You entered a wrong password"})),200
         else:
             return make_response(jsonify({"message": "Wrong credentials, try again"})),200
+
+        self.manager = manager
+        self.name = name
+        self.description = description
+
+    @app.route('/api/v1/company', methods=['GET','POST'])
+    def register_new_company():
+        if request.method == 'GET':
+            companies = User.query.all()
+            return make_response(jsonify({"companies": users_schema.dumps(companies)})), 200
+
+        if request.method == 'POST':
+            manager = request.get_json()['manager']
+            name = request.get_json()['name']
+            description = request.get_json()['description']
+            verify_data = Company_Validation({"manager":manager, "name":name, "description":description})
+            is_verified = verify_data.check_input()
+            if is_verified[0] == 200:
+                new_company = Company(manager, name, description)
+                new_company.save()
+                return make_response(jsonify({"message": "Company successfully created!"})), 201
+            else:
+                return make_response(jsonify({"message":is_verified[1]})), is_verified[0]
 
 
     return app
