@@ -166,29 +166,49 @@ def create_app(config_name):
 
 ########################################################################################### Property CRUD
 
-    @app.route('/api/v1/property', methods=['GET','POST'])
-    def add_get_new_company():
+    @app.route('/api/v1/properties', methods=['GET','POST'])
+    def get_add_new_property():
         if request.method == 'GET':
             properties = Property.query.all()
             return make_response(jsonify({"properties": properties_schema.dump(properties)})), 200
 
         if request.method == 'POST':
             name =   str(request.data.get('name', ''))
-            description =   str(request.data.get('description', ''))
+            description =  str(request.data.get('description', ''))
             category =   str(request.data.get('category', ''))
-            company =   str(request.data.get('company', ''))
+            company_id =  str(request.data.get('company_id', ''))
 
-            verify_data = Property_Validation({     
-                                                "name":name,
-                                                "description":description, 
-                                                "category":category,
-                                                "company_id": company })
+            verify_data = Property_Validation({"name":name, "description":description, "category": category, "company_id": company_id})
             is_verified = verify_data.check_input()
             if is_verified[0] == 200:
                 new_property = Property(name, description, category, company_id)
                 new_property.save()
-                return make_response(jsonify({"message": "Property created.", "property": property_schema.dump(new_property)})), 201
+                return make_response(jsonify({"message": "property successfully created!", "property": property_schema.dump(new_property)})), 201
             else:
                 return make_response(jsonify({"message":is_verified[1]})), is_verified[0]
+
+    @app.route('/api/v1/properties/<id>', methods=['GET','PUT','DELETE'])
+    def get_update_delete_property(id):
+        property_ = Property.query.get(id)
+        if property_:
+            if request.method == 'DELETE':
+                # @manager required     current user == company manager
+                    property_.delete()
+                    return make_response(jsonify({"message": "You Successfully Deleted Property "+id})), 202
+            elif request.method == 'GET':
+                return make_response(jsonify({"property": property_schema.dump(property_)})), 200
+            elif request.method == 'PUT':
+                name =   str(request.data.get('name', ''))
+                description =  str(request.data.get('description', ''))
+                if name and description:
+                    property_.name = name
+                    property_.description = description
+                    property_.save()
+                    return make_response(jsonify({"message":"You successfully updated Property "+id, "category": property_schema.dump(property_)})), 202
+                else:
+                    return make_response(jsonify({"message":"Include both Name & Description"})), 400
+        else:
+            return make_response(jsonify({"message": "Property does not exist"})), 404
+
 
     return app
