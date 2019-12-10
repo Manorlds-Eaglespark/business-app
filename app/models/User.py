@@ -1,7 +1,6 @@
 import jwt
 from flask_bcrypt import Bcrypt
-from shared_db import db
-from shared_db import ma
+from shared_db import db, ma
 
 class User(db.Model):
     __tablename__ = 'users'

@@ -11,8 +11,11 @@ from app.models.companies import Company
 from app.utilities.user_functions import User_Functions
 from app.models.user import user_schema
 from app.models.user import users_schema
+from app.models.companies import company_schema
+from app.models.companies import companies_schema
 from app.utilities.register_validation import Register_Validation
 from app.utilities.company_validation import Company_Validation
+from app.utilities.login_requirements import login_required
                 
 def create_app(config_name):
     app = FlaskAPI(__name__, instance_relative_config=True)
@@ -69,8 +72,8 @@ def create_app(config_name):
     @app.route('/api/v1/company', methods=['GET','POST'])
     def register_new_company():
         if request.method == 'GET':
-            companies = User.query.all()
-            return make_response(jsonify({"companies": users_schema.dumps(companies)})), 200
+            companies = Company.query.all()
+            return make_response(jsonify({"companies": companies_schema.dump(companies)})), 200
 
         if request.method == 'POST':
             manager = request.get_json()['manager']
@@ -84,6 +87,33 @@ def create_app(config_name):
                 return make_response(jsonify({"message": "Company successfully created!"})), 201
             else:
                 return make_response(jsonify({"message":is_verified[1]})), is_verified[0]
+
+
+    @app.route('/api/v1/company/<id>', methods=['GET','PUT','DELETE'])
+    @login_required
+    def get_update_delete_company(current_user, id):
+        company = Company.query.get(id)
+        if company:
+            if request.method == 'DELETE':
+                # @manager required     current user == company manager
+                    company.delete()
+                    return make_response(jsonify({"message": "You Successfully Deleted Company "+id})), 202
+            
+            elif request.method == 'GET':
+                return make_response(jsonify({"company": company_schema.dump(company)})), 200
+            
+            elif request.method == 'PUT':
+                name =   str(request.data.get('name', ''))
+                description =  str(request.data.get('description', ''))
+                if name and description:
+                    company.name = name
+                    company.description = description
+                    company.save()
+                    return make_response(jsonify({"message":"You successfully updated Company "+id, "company": company_schema.dump(company)})), 202
+                else:
+                    return make_response(jsonify({"message":"Include both Name & Description"})), 400
+        else:
+            return make_response(jsonify({"message": "Company does not exist"})), 404
 
 
     return app

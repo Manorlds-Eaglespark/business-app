@@ -9,7 +9,7 @@ def login_required(f):
     def wrap(*args, **kwargs):
         access_token = get_token()
         if access_token:
-            access_token = str(access_token).split(" ")[1]
+            access_token = str(access_token).split(" ")[0]
             user_id = decode_token(access_token)
             if isinstance(user_id, str):
                 return make_response(jsonify({"status": 401, "error": user_id})), 401

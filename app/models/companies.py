@@ -1,4 +1,4 @@
-from shared_db import db
+from shared_db import db, ma
 from app.models.user import User
 
 class Company(db.Model):
@@ -23,10 +23,9 @@ class Company(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-
 class CompanySchema(ma.Schema):
     class Meta:
-        fields = ("manager", "name", "description", "time_added")
+        fields = ("id", "manager", "name", "description", "time_added")
 
 company_schema = CompanySchema()
 companies_schema = CompanySchema(many=True)
