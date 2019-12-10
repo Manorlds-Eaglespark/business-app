@@ -7,7 +7,7 @@ from app.models.amenities import Amenity
 from app.models.companies import Company
 from app.models.locations import Location
 from app.models.photos import Photo
-from app.models.property import Property
+from app.models.properties import Property
 from app.models.reviews import Review
 
 app = create_app(config_name=os.getenv('APP_SETTINGS'))

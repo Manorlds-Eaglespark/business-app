@@ -1,5 +1,5 @@
 from shared_db import db
-from app.models.property import Property
+from app.models.properties import Property
 
 class Amenity(db.Model):
     __tablename__ = 'amenities'

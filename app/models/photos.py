@@ -1,5 +1,5 @@
 from shared_db import db
-from app.models.property import Property
+from app.models.properties import Property
 
 class Photo(db.Model):
     __tablename__ = 'photos'
