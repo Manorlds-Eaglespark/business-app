@@ -9,6 +9,7 @@ from shared_db import db, ma
 from app.models.user import User
 from app.models.categories import Category
 from app.models.companies import Company
+from app.models.properties import Property
 from app.utilities.user_functions import User_Functions
 from app.models.user import user_schema
 from app.models.user import users_schema
@@ -21,6 +22,7 @@ from app.models.properties import properties_schema
 from app.utilities.register_validation import Register_Validation
 from app.utilities.company_validation import Company_Validation
 from app.utilities.category_validation import Category_Validation
+from app.utilities.property_validation import Property_Validation
 from app.utilities.login_requirements import login_required
                 
 def create_app(config_name):
@@ -175,10 +177,10 @@ def create_app(config_name):
         if request.method == 'POST':
             name =   str(request.data.get('name', ''))
             description =  str(request.data.get('description', ''))
-            category =   str(request.data.get('category', ''))
-            company_id =  str(request.data.get('company_id', ''))
+            category =   request.data.get('category', '')
+            company_id =  request.data.get('company_id', '')
 
-            verify_data = Property_Validation({"name":name, "description":description, "category": category, "company_id": company_id})
+            verify_data = Property_Validation({"name":name, "description":description, "category_id": category, "company_id": company_id})
             is_verified = verify_data.check_input()
             if is_verified[0] == 200:
                 new_property = Property(name, description, category, company_id)

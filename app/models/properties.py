@@ -16,12 +16,20 @@ class Property(db.Model):
     def __init__(self, name, description, category, company):
         self.name = name
         self.description = description
-        self.category = category
+        self.category_id = category
         self.company_id = company
+    
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
 
 class PropertySchema(ma.Schema):
     class Meta:
-        fields = ("id", "name", "company_id" "description", "category", "time_added")
+        fields = ("id", "name", "company_id", "description", "category_id", "time_added")
 
 property_schema = PropertySchema()
 properties_schema = PropertySchema(many=True)
