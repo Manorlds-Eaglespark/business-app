@@ -10,9 +10,12 @@ from app.models.user import User
 from app.models.categories import Category
 from app.models.companies import Company
 from app.models.properties import Property
+from app.models.reviews import  Review
 from app.utilities.user_functions import User_Functions
 from app.models.user import user_schema
 from app.models.user import users_schema
+from app.models.reviews import review_schema
+from app.models.reviews import reviews_schema
 from app.models.companies import company_schema
 from app.models.companies import companies_schema
 from app.models.categories import category_schema
@@ -23,6 +26,7 @@ from app.utilities.register_validation import Register_Validation
 from app.utilities.company_validation import Company_Validation
 from app.utilities.category_validation import Category_Validation
 from app.utilities.property_validation import Property_Validation
+from app.utilities.reviews_validation import Review_Validation
 from app.utilities.login_requirements import login_required
                 
 def create_app(config_name):
@@ -211,6 +215,56 @@ def create_app(config_name):
                     return make_response(jsonify({"message":"Include both Name & Description"})), 400
         else:
             return make_response(jsonify({"message": "Property does not exist"})), 404
+
+
+
+########################################################################################### Reviews CRUD
+
+    @app.route('/api/v1/reviews', methods=['GET','POST'])
+    @login_required
+    def get_add_new_review(current_user):
+        if request.method == 'GET':
+            reviews = Review.query.all()
+            return make_response(jsonify({"reviews": reviews_schema.dump(reviews)})), 200
+
+        if request.method == 'POST':
+            user_id =   current_user
+            property_id =  request.data.get('property', '')
+            comment =   request.data.get('comment', '')
+            rating =  request.data.get('rating', '')
+
+            verify_data = Review_Validation({"user_id":user_id, "property_id":property_id, "comment": comment, "rating": rating})
+            is_verified = verify_data.check_input()
+            if is_verified[0] == 200:
+                new_review = Review(user_id, property_id, comment, rating)
+                new_review.save()
+                return make_response(jsonify({"message": "Review successfully saved!", "review": review_schema.dump(new_review)})), 201
+            else:
+                return make_response(jsonify({"message":is_verified[1]})), is_verified[0]
+
+    @app.route('/api/v1/reviews/<id>', methods=['GET','PUT','DELETE'])
+    def get_update_delete_review(id):
+        review = Review.query.get(id)
+        if review:
+            if request.method == 'DELETE':
+                # @manager required     current user == company manager
+                    review.delete()
+                    return make_response(jsonify({"message": "You Successfully deleted Review "+id})), 202
+            elif request.method == 'GET':
+                return make_response(jsonify({"review": review_schema.dump(review)})), 200
+            elif request.method == 'PUT':
+                comment =   str(request.data.get('comment', ''))
+                rating =  str(request.data.get('rating', ''))
+                if comment and rating:
+                    review.comment = comment
+                    review.rating = rating
+                    review.save()
+                    return make_response(jsonify({"message":"You successfully updated review "+id, "review": review_schema.dump(review)})), 202
+                else:
+                    return make_response(jsonify({"message":"Include both Name & Description"})), 400
+        else:
+            return make_response(jsonify({"message": "Review does not exist"})), 404
+
 
 
     return app
