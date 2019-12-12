@@ -11,6 +11,7 @@ from app.models.categories import Category
 from app.models.companies import Company
 from app.models.properties import Property
 from app.models.reviews import  Review
+from app.models.locations import Location
 from app.utilities.user_functions import User_Functions
 from app.models.user import user_schema
 from app.models.user import users_schema
@@ -22,11 +23,14 @@ from app.models.categories import category_schema
 from app.models.categories import categories_schema
 from app.models.properties import property_schema
 from app.models.properties import properties_schema
+from app.models.locations import location_schema
+from app.models.locations import locations_schema
 from app.utilities.register_validation import Register_Validation
 from app.utilities.company_validation import Company_Validation
 from app.utilities.category_validation import Category_Validation
 from app.utilities.property_validation import Property_Validation
 from app.utilities.reviews_validation import Review_Validation
+from app.utilities.location_validation import Location_Validation
 from app.utilities.login_requirements import login_required
                 
 def create_app(config_name):
@@ -63,7 +67,6 @@ def create_app(config_name):
         else:
             return make_response(jsonify({"message":is_verified[1]})), is_verified[0]
 
-
     @app.route('/api/v1/user/login', methods=['POST'])
     def login_registered_user():
         email = request.get_json()['email']
@@ -78,7 +81,6 @@ def create_app(config_name):
         else:
             return make_response(jsonify({"message": "Wrong credentials, try again"})),200
 
-
 ########################################################################################### Company CRUD
 
     @app.route('/api/v1/company', methods=['GET','POST'])
@@ -86,7 +88,6 @@ def create_app(config_name):
         if request.method == 'GET':
             companies = Company.query.all()
             return make_response(jsonify({"companies": companies_schema.dump(companies)})), 200
-
         if request.method == 'POST':
             manager = request.get_json()['manager']
             name = request.get_json()['name']
@@ -99,7 +100,6 @@ def create_app(config_name):
                 return make_response(jsonify({"message": "Company successfully created!"})), 201
             else:
                 return make_response(jsonify({"message":is_verified[1]})), is_verified[0]
-
 
     @app.route('/api/v1/company/<id>', methods=['GET','PUT','DELETE'])
     @login_required
@@ -125,7 +125,6 @@ def create_app(config_name):
         else:
             return make_response(jsonify({"message": "Company does not exist"})), 404
 
-
 ########################################################################################### Category CRUD
 
     @app.route('/api/v1/categories', methods=['GET','POST'])
@@ -133,7 +132,6 @@ def create_app(config_name):
         if request.method == 'GET':
             categories = Category.query.all()
             return make_response(jsonify({"categories": categories_schema.dump(categories)})), 200
-
         if request.method == 'POST':
             name =   str(request.data.get('name', ''))
             description =  str(request.data.get('description', ''))
@@ -169,7 +167,6 @@ def create_app(config_name):
         else:
             return make_response(jsonify({"message": "Category does not exist"})), 404
 
-
 ########################################################################################### Property CRUD
 
     @app.route('/api/v1/properties', methods=['GET','POST'])
@@ -177,13 +174,11 @@ def create_app(config_name):
         if request.method == 'GET':
             properties = Property.query.all()
             return make_response(jsonify({"properties": properties_schema.dump(properties)})), 200
-
         if request.method == 'POST':
             name =   str(request.data.get('name', ''))
             description =  str(request.data.get('description', ''))
             category =   request.data.get('category', '')
             company_id =  request.data.get('company_id', '')
-
             verify_data = Property_Validation({"name":name, "description":description, "category_id": category, "company_id": company_id})
             is_verified = verify_data.check_input()
             if is_verified[0] == 200:
@@ -216,8 +211,6 @@ def create_app(config_name):
         else:
             return make_response(jsonify({"message": "Property does not exist"})), 404
 
-
-
 ########################################################################################### Reviews CRUD
 
     @app.route('/api/v1/reviews', methods=['GET','POST'])
@@ -226,13 +219,11 @@ def create_app(config_name):
         if request.method == 'GET':
             reviews = Review.query.all()
             return make_response(jsonify({"reviews": reviews_schema.dump(reviews)})), 200
-
         if request.method == 'POST':
             user_id =   current_user
             property_id =  request.data.get('property', '')
             comment =   request.data.get('comment', '')
             rating =  request.data.get('rating', '')
-
             verify_data = Review_Validation({"user_id":user_id, "property_id":property_id, "comment": comment, "rating": rating})
             is_verified = verify_data.check_input()
             if is_verified[0] == 200:
@@ -264,6 +255,51 @@ def create_app(config_name):
                     return make_response(jsonify({"message":"Include both Name & Description"})), 400
         else:
             return make_response(jsonify({"message": "Review does not exist"})), 404
+
+########################################################################################### Locations CRUD
+
+    @app.route('/api/v1/properties/<property_id>/locations', methods=['GET','POST'])
+    def get_add_new_location(property_id):
+        if request.method == 'GET':
+            locations = Location.query.filter_by(property_id=property_id).all()
+            return make_response(jsonify({"locations": locations_schema.dump(locations)})), 200
+        if request.method == 'POST':
+            latitude =   request.data.get('latitude','')
+            longitude =   request.data.get('longitude', '')
+            description =  request.data.get('description', '')
+            verify_data = Location_Validation({"latitude":latitude, "longitude":longitude, "description": description})
+            is_verified = verify_data.check_input()
+            if is_verified[0] == 200:
+                new_location = Location(property_id, latitude, longitude, description)
+                new_location.save()
+                return make_response(jsonify({"message": "Location successfully saved!", "Location": location_schema.dump(new_location)})), 201
+            else:
+                return make_response(jsonify({"message":is_verified[1]})), is_verified[0]
+
+    @app.route('/api/v1/properties/<property_id>/locations/<id>', methods=['GET','PUT','DELETE'])
+    def get_update_delete_locations(property_id, id):
+        location = Location.query.get(id)
+        if location:
+            if request.method == 'DELETE':
+                # @manager required     current user == company manager
+                    location.delete()
+                    return make_response(jsonify({"message": "You Successfully deleted Location "+id})), 202
+            elif request.method == 'GET':
+                return make_response(jsonify({"location": location_schema.dump(location)})), 200
+            elif request.method == 'PUT':
+                latitude =   str(request.data.get('latitude', ''))
+                longitude =  str(request.data.get('longitude', ''))
+                description =  str(request.data.get('description', ''))
+                if latitude and longitude and description:
+                    location.latitude = latitude
+                    location.longitude = longitude
+                    location.description = description
+                    location.save()
+                    return make_response(jsonify({"message":"You successfully updated location "+id, "review": location_schema.dump(location)})), 202
+                else:
+                    return make_response(jsonify({"message":"Include Latitude, Longitude & Description"})), 400
+        else:
+            return make_response(jsonify({"message": "Location does not exist"})), 404
 
 
 
