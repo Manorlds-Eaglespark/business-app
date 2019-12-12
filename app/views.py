@@ -12,6 +12,7 @@ from app.models.companies import Company
 from app.models.properties import Property
 from app.models.reviews import  Review
 from app.models.locations import Location
+from app.models.amenities import Amenity
 from app.utilities.user_functions import User_Functions
 from app.models.user import user_schema
 from app.models.user import users_schema
@@ -25,12 +26,15 @@ from app.models.properties import property_schema
 from app.models.properties import properties_schema
 from app.models.locations import location_schema
 from app.models.locations import locations_schema
+from app.models.amenities import amenity_schema
+from app.models.amenities import amenities_schema
 from app.utilities.register_validation import Register_Validation
 from app.utilities.company_validation import Company_Validation
 from app.utilities.category_validation import Category_Validation
 from app.utilities.property_validation import Property_Validation
 from app.utilities.reviews_validation import Review_Validation
 from app.utilities.location_validation import Location_Validation
+from app.utilities.amenity_validation import Amenity_Validation
 from app.utilities.login_requirements import login_required
                 
 def create_app(config_name):
@@ -301,6 +305,45 @@ def create_app(config_name):
         else:
             return make_response(jsonify({"message": "Location does not exist"})), 404
 
+
+########################################################################################### Amenity CRUD
+
+    @app.route('/api/v1/properties/<property_id>/amenities', methods=['GET','POST'])
+    def get_add_new_amenity(property_id):
+        if request.method == 'GET':
+            amenities = Amenity.query.filter_by(property_id=property_id).all()
+            return make_response(jsonify({"amenities": amenities_schema.dump(amenities)})), 200
+        if request.method == 'POST':
+            description =  request.data.get('description', '')
+            verify_data = Amenity_Validation({"description": description})
+            is_verified = verify_data.check_input()
+            if is_verified[0] == 200:
+                new_amenity = Amenity(property_id, description)
+                new_amenity.save()
+                return make_response(jsonify({"message": "Amenity successfully saved!", "Amenity": amenity_schema.dump(new_amenity)})), 201
+            else:
+                return make_response(jsonify({"message":is_verified[1]})), is_verified[0]
+
+    @app.route('/api/v1/properties/<property_id>/amenities/<id>', methods=['GET','PUT','DELETE'])
+    def get_update_delete_amenities(property_id, id):
+        amenity = Amenity.query.get(id)
+        if amenity:
+            if request.method == 'DELETE':
+                # @manager required     current user == company manager
+                    amenity.delete()
+                    return make_response(jsonify({"message": "You Successfully deleted Amenity "+id})), 202
+            elif request.method == 'GET':
+                return make_response(jsonify({"amenity": amenity_schema.dump(amenity)})), 200
+            elif request.method == 'PUT':
+                description =  str(request.data.get('description', ''))
+                if description:
+                    amenity.description = description
+                    amenity.save()
+                    return make_response(jsonify({"message":"You successfully updated amenity "+id, "amenity": amenity_schema.dump(amenity)})), 202
+                else:
+                    return make_response(jsonify({"message":"Include a Description"})), 400
+        else:
+            return make_response(jsonify({"message": "Amenity does not exist"})), 404
 
 
     return app
