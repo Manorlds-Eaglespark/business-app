@@ -13,6 +13,7 @@ from app.models.properties import Property
 from app.models.reviews import  Review
 from app.models.locations import Location
 from app.models.amenities import Amenity
+from app.models.photos import Photo
 from app.utilities.user_functions import User_Functions
 from app.models.user import user_schema
 from app.models.user import users_schema
@@ -28,6 +29,8 @@ from app.models.locations import location_schema
 from app.models.locations import locations_schema
 from app.models.amenities import amenity_schema
 from app.models.amenities import amenities_schema
+from app.models.photos import photo_schema
+from app.models.photos import photos_schema
 from app.utilities.register_validation import Register_Validation
 from app.utilities.company_validation import Company_Validation
 from app.utilities.category_validation import Category_Validation
@@ -35,6 +38,7 @@ from app.utilities.property_validation import Property_Validation
 from app.utilities.reviews_validation import Review_Validation
 from app.utilities.location_validation import Location_Validation
 from app.utilities.amenity_validation import Amenity_Validation
+from app.utilities.photo_validation import Photo_Validation
 from app.utilities.login_requirements import login_required
                 
 def create_app(config_name):
@@ -344,6 +348,57 @@ def create_app(config_name):
                     return make_response(jsonify({"message":"Include a Description"})), 400
         else:
             return make_response(jsonify({"message": "Amenity does not exist"})), 404
+
+
+########################################################################################### Photos CRUD
+
+    @app.route('/api/v1/properties/<property_id>/photo-albums', methods=['GET','POST'])
+    def get_add_new_photo(property_id):
+        if request.method == 'GET':
+            photos = Photo.query.filter_by(property_id=property_id).all()
+            return make_response(jsonify({"photo_urls": photos_schema.dump(photos)})), 200
+        if request.method == 'POST':
+            photo_1 =  request.data.get('photo_1', '')
+            photo_2 =  request.data.get('photo_2', '')
+            photo_3 =  request.data.get('photo_3', '')
+            photo_4 =  request.data.get('photo_4', '')
+            photo_5 =  request.data.get('photo_5', '')
+            photo_6 =  request.data.get('photo_6', '')
+            photo_7 =  request.data.get('photo_7', '')
+            photo_obj = {"property_id": property_id,"photo_1": photo_1, "photo_2": photo_2, "photo_3": photo_3, "photo_4": photo_4, "photo_5": photo_5, "photo_6": photo_6, "photo_7": photo_7}
+            verify_data = Photo_Validation(photo_obj)
+            is_verified = verify_data.check_input()
+            if is_verified[0] == 200:
+                new_photos = Photo(photo_obj)
+                new_photos.save()
+                return make_response(jsonify({"message": "Photos successfully uploaded!", "Photo_urls": photo_schema.dump(new_photos)})), 201
+            else:
+                return make_response(jsonify({"message":is_verified[1]})), is_verified[0]
+
+    @app.route('/api/v1/properties/<property_id>/photo-albums/<id>', methods=['GET','PUT','DELETE'])
+    def get_update_delete_photos(property_id, id):
+        photo = Photo.query.get(id)
+        if photo:
+            if request.method == 'DELETE':
+                # @manager required     current user == company manager
+                    photo.delete()
+                    return make_response(jsonify({"message": "You Successfully deleted photo album "+id})), 202
+            elif request.method == 'GET':
+                return make_response(jsonify({"photo_urls": photo_schema.dump(photo)})), 200
+            elif request.method == 'PUT':
+                photo_1 =  str(request.data.get('photo_1', ''))
+                photo_2 =  str(request.data.get('photo_2', ''))
+                photo_3 =  str(request.data.get('photo_3', ''))
+                photo_4 =  str(request.data.get('photo_4', ''))
+                photo_5 =  str(request.data.get('photo_5', ''))
+                photo_6 =  str(request.data.get('photo_6', ''))
+                photo_7 =  str(request.data.get('photo_7', ''))
+                given_images = {"photo_1": photo_1, "photo_2": photo_2, "photo_3": photo_3, "photo_4": photo_4, "photo_5": photo_5, "photo_6": photo_6, "photo_7": photo_7}
+                photo.add_added(given_images)
+                photo.save()
+                return make_response(jsonify({"message":"You successfully updated photo album "+id, "Photo_urls": photo_schema.dump(photo)})), 202
+        else:
+            return make_response(jsonify({"message": "Photo album does not exist"})), 404
 
 
     return app
