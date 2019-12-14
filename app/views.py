@@ -7,40 +7,20 @@ from flask_marshmallow import Marshmallow
 from instance.config import app_config
 from shared_db import db, ma
 from app.models.user import User
-from app.models.categories import Category
-from app.models.companies import Company
-from app.models.properties import Property
-from app.models.reviews import  Review
-from app.models.locations import Location
-from app.models.amenities import Amenity
-from app.models.photos import Photo
+from app.models.categories import Category, categories_schema, category_schema
+from app.models.companies import Company, companies_schema, company_schema
+from app.models.properties import Property, properties_schema, property_schema
+from app.models.reviews import  Review, review_schema, reviews_schema
+from app.models.locations import Location, location_schema, locations_schema
+from app.models.amenities import Amenity, amenities_schema, amenity_schema
+from app.models.photos import Photo, photo_schema, photos_schema
 from app.utilities.user_functions import User_Functions
-from app.models.user import user_schema
-from app.models.user import users_schema
-from app.models.reviews import review_schema
-from app.models.reviews import reviews_schema
-from app.models.companies import company_schema
-from app.models.companies import companies_schema
-from app.models.categories import category_schema
-from app.models.categories import categories_schema
-from app.models.properties import property_schema
-from app.models.properties import properties_schema
-from app.models.locations import location_schema
-from app.models.locations import locations_schema
-from app.models.amenities import amenity_schema
-from app.models.amenities import amenities_schema
-from app.models.photos import photo_schema
-from app.models.photos import photos_schema
-from app.utilities.register_validation import Register_Validation
-from app.utilities.company_validation import Company_Validation
-from app.utilities.category_validation import Category_Validation
-from app.utilities.property_validation import Property_Validation
-from app.utilities.reviews_validation import Review_Validation
-from app.utilities.location_validation import Location_Validation
-from app.utilities.amenity_validation import Amenity_Validation
-from app.utilities.photo_validation import Photo_Validation
+from app.utilities.model_validations import Register_Validation, Amenity_Validation, \
+    Category_Validation, Company_Validation, Location_Validation, Photo_Validation, \
+        Property_Validation, Review_Validation
 from app.utilities.login_requirements import login_required
                 
+
 def create_app(config_name):
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -55,8 +35,9 @@ def create_app(config_name):
     def welcome_to_api():
         """Check if API is running"""
         response = {"status": 200,
-            "message": "Welcome To Malazi App API"}
+            "message": "Welcome To Malazi App Backend API"}
         return make_response(jsonify(response)), 200
+
 ########################################################################################### Login & Register
 
     @app.route('/api/v1/user/register', methods=['POST'])
