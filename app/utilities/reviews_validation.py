@@ -9,8 +9,8 @@ class Review_Validation():
         self.rating = review_data["rating"]
 
     def check_input(self):
-        if not (self.user_id and self.property_id and self.comment and self.rating):
+        if not (self.user_id and self.comment and self.rating):
             return [400, "Make sure you fill all the required fields"]
-        elif (not isinstance(self.user_id, int) or not isinstance(self.property_id, int) or not isinstance(self.comment, str) or not isinstance(self.rating, int)):
+        elif (not isinstance(self.user_id, int) or not isinstance(self.comment, str) or not isinstance(self.rating, int)):
             return [406, "Make sure to use correct types for all fields "]
         return [200, "All Good"]

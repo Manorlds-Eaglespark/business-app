@@ -91,7 +91,7 @@ def create_app(config_name):
 
 ########################################################################################### Company CRUD
 
-    @app.route('/api/v1/company', methods=['GET','POST'])
+    @app.route('/api/v1/companies', methods=['GET','POST'])
     def register_new_company():
         if request.method == 'GET':
             companies = Company.query.all()
@@ -105,20 +105,16 @@ def create_app(config_name):
             if is_verified[0] == 200:
                 new_company = Company(manager, name, description)
                 new_company.save()
-                return make_response(jsonify({"message": "Company successfully created!"})), 201
+                return make_response(jsonify({"message": "Company successfully created!", "company": company_schema.dump(new_company)})), 201
             else:
                 return make_response(jsonify({"message":is_verified[1]})), is_verified[0]
 
-    @app.route('/api/v1/company/<id>', methods=['GET','PUT','DELETE'])
+    @app.route('/api/v1/companies/<id>', methods=['GET','PUT','DELETE'])
     @login_required
     def get_update_delete_company(current_user, id):
         company = Company.query.get(id)
         if company:
-            if request.method == 'DELETE':
-                # @manager required     current user == company manager
-                    company.delete()
-                    return make_response(jsonify({"message": "You Successfully Deleted Company "+id})), 202
-            elif request.method == 'GET':
+            if request.method == 'GET':
                 return make_response(jsonify({"company": company_schema.dump(company)})), 200
             elif request.method == 'PUT':
                 name =   str(request.data.get('name', ''))
@@ -130,6 +126,9 @@ def create_app(config_name):
                     return make_response(jsonify({"message":"You successfully updated Company "+id, "company": company_schema.dump(company)})), 202
                 else:
                     return make_response(jsonify({"message":"Include both Name & Description"})), 400
+            elif request.method == 'DELETE':
+                company.delete()
+                return make_response(jsonify({"message": "You Successfully Deleted Company "+id})), 202
         else:
             return make_response(jsonify({"message": "Company does not exist"})), 404
 
@@ -157,7 +156,6 @@ def create_app(config_name):
         category = Category.query.get(id)
         if category:
             if request.method == 'DELETE':
-                # @manager required     current user == company manager
                     category.delete()
                     return make_response(jsonify({"message": "You Successfully Deleted Category "+id})), 202
             elif request.method == 'GET':
@@ -221,15 +219,14 @@ def create_app(config_name):
 
 ########################################################################################### Reviews CRUD
 
-    @app.route('/api/v1/reviews', methods=['GET','POST'])
+    @app.route('/api/v1/properties/<property_id>/reviews', methods=['GET','POST'])
     @login_required
-    def get_add_new_review(current_user):
+    def get_add_new_review(current_user, property_id):
         if request.method == 'GET':
             reviews = Review.query.all()
             return make_response(jsonify({"reviews": reviews_schema.dump(reviews)})), 200
         if request.method == 'POST':
             user_id =   current_user
-            property_id =  request.data.get('property', '')
             comment =   request.data.get('comment', '')
             rating =  request.data.get('rating', '')
             verify_data = Review_Validation({"user_id":user_id, "property_id":property_id, "comment": comment, "rating": rating})
@@ -241,14 +238,14 @@ def create_app(config_name):
             else:
                 return make_response(jsonify({"message":is_verified[1]})), is_verified[0]
 
-    @app.route('/api/v1/reviews/<id>', methods=['GET','PUT','DELETE'])
+    @app.route('/api/v1/properties/<property_id>/reviews/<id>', methods=['GET','PUT','DELETE'])
+    @login_required
     def get_update_delete_review(id):
         review = Review.query.get(id)
         if review:
             if request.method == 'DELETE':
-                # @manager required     current user == company manager
-                    review.delete()
-                    return make_response(jsonify({"message": "You Successfully deleted Review "+id})), 202
+                review.delete()
+                return make_response(jsonify({"message": "You Successfully deleted Review "+id})), 202
             elif request.method == 'GET':
                 return make_response(jsonify({"review": review_schema.dump(review)})), 200
             elif request.method == 'PUT':
@@ -289,9 +286,8 @@ def create_app(config_name):
         location = Location.query.get(id)
         if location:
             if request.method == 'DELETE':
-                # @manager required     current user == company manager
-                    location.delete()
-                    return make_response(jsonify({"message": "You Successfully deleted Location "+id})), 202
+                location.delete()
+                return make_response(jsonify({"message": "You Successfully deleted Location "+id})), 202
             elif request.method == 'GET':
                 return make_response(jsonify({"location": location_schema.dump(location)})), 200
             elif request.method == 'PUT':
