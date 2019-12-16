@@ -73,12 +73,13 @@ def create_app(config_name):
 ########################################################################################### Agent CRUD
 
     @app.route('/api/v1/agents', methods=['GET','POST'])
-    def register_new_agent():
+    @login_required
+    def register_new_agent(current_user):
         if request.method == 'GET':
             agents = Agent.query.all()
             return make_response(jsonify({"agents": agents_schema.dump(agents)})), 200
         if request.method == 'POST':
-            manager =   request.data.get('manager', 0)
+            manager =   current_user
             name =   str(request.data.get('name', ''))
             description =   str(request.data.get('description', ''))
             telephone =   str(request.data.get('telephone', ''))
@@ -167,16 +168,23 @@ def create_app(config_name):
     def get_add_new_property():
         if request.method == 'GET':
             properties = Property.query.all()
-            return make_response(jsonify({"properties": properties_schema.dump(properties)})), 200
+            properties_all = properties_schema.dump(properties)
+            all_properties = []
+            for property in properties_all:
+                property['photos'] = photos_schema.dump(Photo.query.filter_by(property_id=property['id']))
+                property['locations'] = locations_schema.dump(Location.query.filter_by(property_id=property['id']))
+                property['amenities'] = amenities_schema.dump(Amenity.query.filter_by(property_id=property['id']))
+                all_properties.append(property)
+            return make_response(jsonify({"properties": all_properties})), 200
         if request.method == 'POST':
             name =   str(request.data.get('name', ''))
             description =  str(request.data.get('description', ''))
-            category =   request.data.get('category', '')
-            company_id =  request.data.get('company_id', '')
-            verify_data = Property_Validation({"name":name, "description":description, "category_id": category, "company_id": company_id})
+            category =   request.data.get('category', 0)
+            agent_id =  request.data.get('agent_id', 0)
+            verify_data = Property_Validation({"name":name, "description":description, "category_id": category, "agent_id": agent_id})
             is_verified = verify_data.check_input()
             if is_verified[0] == 200:
-                new_property = Property(name, description, category, company_id)
+                new_property = Property(name, description, category, agent_id)
                 new_property.save()
                 return make_response(jsonify({"message": "property successfully created!", "property": property_schema.dump(new_property)})), 201
             else:
@@ -187,11 +195,14 @@ def create_app(config_name):
         property_ = Property.query.get(id)
         if property_:
             if request.method == 'DELETE':
-                # @manager required     current user == company manager
                     property_.delete()
                     return make_response(jsonify({"message": "You Successfully Deleted Property "+id})), 202
             elif request.method == 'GET':
-                return make_response(jsonify({"property": property_schema.dump(property_)})), 200
+                property_i =  property_schema.dump(property_)
+                property_i['photos'] = photos_schema.dump(Photo.query.filter_by(property_id=id))
+                property_i['locations'] = locations_schema.dump(Location.query.filter_by(property_id=id))
+                property_i['amenities'] = amenities_schema.dump(Amenity.query.filter_by(property_id=id))
+                return make_response(jsonify({'property': property_i})), 200
             elif request.method == 'PUT':
                 name =   str(request.data.get('name', ''))
                 description =  str(request.data.get('description', ''))
