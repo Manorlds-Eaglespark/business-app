@@ -19,6 +19,7 @@ from app.utilities.model_validations import Register_Validation, Amenity_Validat
     Category_Validation, Agent_Validation, Location_Validation, Photo_Validation, \
         Property_Validation, Review_Validation
 from app.utilities.login_requirements import login_required
+from app.utilities.helpers import Helpers
                 
 
 def create_app(config_name):
@@ -29,6 +30,7 @@ def create_app(config_name):
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('SQLALCHEMY_DATABASE_URI')
     db.init_app(app)
     ma = Marshmallow(app)
+    helper = Helpers()
     CORS(app)
 
     @app.route('/', methods=['GET'])
@@ -215,6 +217,16 @@ def create_app(config_name):
                     return make_response(jsonify({"message":"Include both Name & Description"})), 400
         else:
             return make_response(jsonify({"message": "Property does not exist"})), 404
+
+    @app.route('/api/v1/properties/search', methods=['POST'])
+    def search_properties_if_available():
+        search_query = request.data.get('search', '')
+        property_by_name = Property.query.filter(Property.name.ilike("%" + search_query + "%")).all()
+        property_by_description = Property.query.filter(Property.description.ilike("%" + search_query + "%")).all()
+        property_1 = properties_schema.dump(property_by_name)
+        property_2 = properties_schema.dump(property_by_description)
+        properties = property_1 + property_2
+        return make_response(jsonify({"properties": helper.remove_dupes(properties) })), 200
 
 ########################################################################################### Reviews CRUD
 
