@@ -1,12 +1,13 @@
 import jwt
 from flask_bcrypt import Bcrypt
-from shared_db import db, ma
+from shared import db, ma
 
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(155))
     email = db.Column(db.String(200))
+    phone = db.Column(db.String(100))
     password = db.Column(db.String(255))
     thumbnail = db.Column(db.String(255))
     role = db.Column(db.String(20))

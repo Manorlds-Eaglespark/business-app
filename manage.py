@@ -4,7 +4,7 @@ from flask_migrate import Migrate, MigrateCommand
 from app.views import db, create_app
 from app.models.user import User
 from app.models.amenities import Amenity
-from app.models.companies import Company
+from app.models.agents import Agent
 from app.models.locations import Location
 from app.models.photos import Photo
 from app.models.properties import Property

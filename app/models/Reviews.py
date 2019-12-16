@@ -1,4 +1,4 @@
-from shared_db import db, ma
+from shared import db, ma
 from app.models.properties import Property
 from app.models.user import User
 

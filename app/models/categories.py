@@ -1,4 +1,4 @@
-from shared_db import db, ma
+from shared import db, ma
 
 class Category(db.Model):
     __tablename__ = 'categories'

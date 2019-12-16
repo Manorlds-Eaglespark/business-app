@@ -29,12 +29,15 @@ class Category_Validation():
         return [200, "All Good"]
 
 
-class Company_Validation():
+class Agent_Validation():
     
-    def __init__(self, company_data):
-        self.manager = company_data["manager"]
-        self.name = company_data["name"]
-        self.description = company_data["description"]
+    def __init__(self, agent_data):
+        self.manager = agent_data['manager']
+        self.name = agent_data['name']
+        self.description = agent_data['description']
+        self.telephone = agent_data['telephone']
+        self.email = agent_data['email']
+        self.address = agent_data['address']
 
     def check_input(self):
         if not (self.manager and self.name and self.description):
