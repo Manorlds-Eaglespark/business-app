@@ -29,12 +29,15 @@ class Category_Validation():
         return [200, "All Good"]
 
 
-class Company_Validation():
+class Agent_Validation():
     
-    def __init__(self, company_data):
-        self.manager = company_data["manager"]
-        self.name = company_data["name"]
-        self.description = company_data["description"]
+    def __init__(self, agent_data):
+        self.manager = agent_data['manager']
+        self.name = agent_data['name']
+        self.description = agent_data['description']
+        self.telephone = agent_data['telephone']
+        self.email = agent_data['email']
+        self.address = agent_data['address']
 
     def check_input(self):
         if not (self.manager and self.name and self.description):
@@ -84,12 +87,12 @@ class Property_Validation():
         self.name = property_data["name"]
         self.description = property_data["description"]
         self.category_id = property_data["category_id"]
-        self.company_id = property_data["company_id"]
+        self.agent_id = property_data["agent_id"]
 
     def check_input(self):
-        if not (self.name and self.description and self.category_id and self.company_id):
+        if not (self.name and self.description and self.category_id and self.agent_id):
             return [400, "Make sure you fill all the required fields"]
-        elif (not isinstance(self.company_id, int) or not isinstance(self.category_id, int) or not isinstance(self.name, str) or not isinstance(self.description, str)):
+        elif (not isinstance(self.agent_id, int) or not isinstance(self.category_id, int) or not isinstance(self.name, str) or not isinstance(self.description, str)):
             return [406, "Make sure to use correct types for all fields "]
         return [200, "All Good"]
 

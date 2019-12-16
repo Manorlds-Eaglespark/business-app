@@ -7,6 +7,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(155))
     email = db.Column(db.String(200))
+    phone = db.Column(db.String(100))
     password = db.Column(db.String(255))
     thumbnail = db.Column(db.String(255))
     role = db.Column(db.String(20))

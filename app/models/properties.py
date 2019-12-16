@@ -1,5 +1,5 @@
 from shared import db, ma
-from app.models.companies import Company
+from app.models.agents import Agent
 from app.models.categories import Category
 
 class Property(db.Model):
@@ -8,9 +8,9 @@ class Property(db.Model):
     name = db.Column(db.String(155))
     description = db.Column(db.String(255))
     category_id = db.Column(db.Integer, db.ForeignKey(Category.id))
-    company_id = db.Column(db.Integer, db.ForeignKey(Company.id))
+    agent_id = db.Column(db.Integer, db.ForeignKey(Agent.id))
     time_added = db.Column(db.DateTime, default=db.func.current_timestamp())
-    company = db.relationship('Company', backref='property')
+    agent = db.relationship('Agent', backref='property')
     category = db.relationship('Category', backref='property')
 
     def __init__(self, name, description, category, company):
