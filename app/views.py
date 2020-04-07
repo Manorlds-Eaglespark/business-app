@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from instance.config import app_config
 from shared import db, ma
-from app.models.user import User
+from app.models.user import User, user_schema
 from app.models.categories import Category, categories_schema, category_schema
 from app.models.agents import Agent, agents_schema, agent_schema
 from app.models.properties import Property, properties_schema, property_schema
@@ -42,35 +42,40 @@ def create_app(config_name):
 
 ########################################################################################### Login & Register
 
-    @app.route('/api/v1/user/register', methods=['POST'])
+    @app.route('/api/v1/users/register', methods=['POST'])
     def register_new_user():
-        name = request.get_json()['name']
-        password = request.get_json()['password']
-        email = request.get_json()['email']
-        role = request.get_json()['role']
-        thumbnail = request.get_json()['thumbnail']
-        verify_data = Register_Validation({"name":name, "password":password, "email":email, "thumbnail":thumbnail, "role":role})
+        user = request.get_json()['user']
+        name = user['name']
+        password = user['password']
+        email = user['email']
+        role = user['role']
+        verify_data = Register_Validation({"name":name, "password":password, "email":email, "role":role})
         is_verified = verify_data.check_input()
         if is_verified[0] == 200:
-            new_user = User(name, password, email, thumbnail, role)
-            new_user.save()
-            return make_response(jsonify({"message": "User successfully created!"})), 201
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                new_user = User(name, password, email, role)
+                new_user.save()
+                return make_response(jsonify({"message": "User successfully created!"})), 201
+            else:
+                return make_response(jsonify({"error": "Email already in use, try with a different one."})), 406
         else:
-            return make_response(jsonify({"message":is_verified[1]})), is_verified[0]
+            return make_response(jsonify({"error":is_verified[1]})), is_verified[0]
 
-    @app.route('/api/v1/user/login', methods=['POST'])
+    @app.route('/api/v1/users/login', methods=['POST'])
     def login_registered_user():
-        email = request.get_json()['email']
-        password = request.get_json()['password']
+        user = request.get_json()['user']
+        email = user['email']
+        password = user['password']
         user = User.query.filter_by(email=email).first()
         if user:
             if User_Functions.user_email_verified(password, user.password):
                 token = User_Functions.generate_token(user.id, user.role)
-                return make_response(jsonify({"token": token, "message": "You have successfully LoggedIn"})),200
+                return make_response(jsonify({"token": token, "message": "You have successfully LoggedIn", "role": user.role})),200
             else:
-                return make_response(jsonify({"message": "You entered a wrong password"})),200
+                return make_response(jsonify({"error": "You entered a wrong password"})),401
         else:
-            return make_response(jsonify({"message": "Wrong credentials, try again"})),200
+            return make_response(jsonify({"error": "Wrong credentials, try again"})),401
 
 ########################################################################################### Agent CRUD
 
