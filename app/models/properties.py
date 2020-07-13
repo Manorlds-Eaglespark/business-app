@@ -1,7 +1,9 @@
 from shared import db, ma
 import datetime
-from app.models.agents import Agent
 from app.models.categories import Category
+from app.models.users import User
+
+
 
 class Property(db.Model):
     __tablename__ = 'properties'
@@ -13,13 +15,13 @@ class Property(db.Model):
     lat = db.Column(db.Float)
     long = db.Column(db.Float)
     category_id = db.Column(db.Integer, db.ForeignKey(Category.id))
-    # agent_id = db.Column(db.Integer, db.ForeignKey(Agent.id))
-    agent_id = db.Column(db.Integer)
+    agent_id = db.Column(db.Integer, db.ForeignKey(User.id))
+    amenities = db.Column(db.String)
     time_added = db.Column(db.String)
-    # agent = db.relationship('Agent', backref='property')
+    agent = db.relationship('User', backref='property')
     category = db.relationship('Category', backref='property')
 
-    def __init__(self, name, price_offer, description, category, agent_id, address, lat, long):
+    def __init__(self, name, price_offer, description, category, agent_id, address, lat, long, amenities):
         self.name = name
         self.price_offer = price_offer
         self.description = description
@@ -28,6 +30,8 @@ class Property(db.Model):
         self.address = address
         self.lat = lat
         self.long = long
+        self.amenities = amenities
+        
         self.time_added = datetime.datetime.utcnow()
     
     def save(self):
@@ -40,7 +44,7 @@ class Property(db.Model):
 
 class PropertySchema(ma.Schema):
     class Meta:
-        fields = ("id", "name", "price_offer", "agent_id", "description", "category_id", "address", "lat", "long", "time_added")
+        fields = ("id", "name", "price_offer", "agent_id", "description", "category_id", "address", "lat", "long", "amenities","time_added")
 
 property_schema = PropertySchema()
 properties_schema = PropertySchema(many=True)

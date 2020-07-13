@@ -2,7 +2,7 @@ import os
 import jwt
 from flask_bcrypt import Bcrypt
 from flask import make_response, request, jsonify, json
-from app.models.user import User
+from app.models.users import User
 from app.views import db
 from datetime import datetime, timedelta
 

@@ -8,16 +8,16 @@ class User(db.Model):
     name = db.Column(db.String(155))
     email = db.Column(db.String(200))
     phone = db.Column(db.String(100))
-    password = db.Column(db.String(255))
     thumbnail = db.Column(db.String(255))
-    role = db.Column(db.String(20))
+    role = db.Column(db.String(10))
     time_added = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    def __init__(self, name, email, password):
-        self.password = Bcrypt().generate_password_hash(password).decode()
+    def __init__(self, name, email, role, thumbnail, phone):
         self.email = email
-        self.role = 'user'
+        self.role = role
         self.name = name
+        self.thumbnail = thumbnail
+        self.phone = phone
 
     def save(self):
         db.session.add(self)
@@ -27,15 +27,18 @@ class User(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def add_image(self, image_url):
-        self.thumbnail = image_url
-        
-    def check_password(self, password):
-        return Bcrypt().check_password_hash(self.password, password)
+    def add_added(self, name, email, phone):
+        if name:
+            self.name = name
+        if email:
+            self.email = email
+        if phone:
+            self.phone = phone
+
 
 class UserSchema(ma.Schema):
     class Meta:
-        fields = ("name", "email", "phone",  "thumbnail", "role", "time_added")
+        fields = ("id", "name", "email", "phone", "thumbnail", "role", "time_added")
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)

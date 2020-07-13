@@ -4,13 +4,14 @@ from app.models.properties import Property
 class Amenity(db.Model):
     __tablename__ = 'amenities'
     id = db.Column(db.Integer, primary_key=True)
-    property_id = db.Column(db.Integer, db.ForeignKey(Property.id))
-    description = db.Column(db.String(255))
-    property_ = db.relationship('Property', backref='amenity')
+    icon = db.Column(db.String(100))
+    del_icon = db.Column(db.String(100))
+    name = db.Column(db.String(100))
 
-    def __init__(self, property_id, description):
-        self.property_id = property_id
-        self.description = description
+    def __init__(self, icon, icon_del, name):
+        self.icon = icon
+        self.del_icon = icon_del
+        self.name = name
         
     def save(self):
         db.session.add(self)
@@ -22,7 +23,7 @@ class Amenity(db.Model):
 
 class AmenitySchema(ma.Schema):
     class Meta:
-        fields = ("id", "property_id", "description")
+        fields = ("id", "icon", "name")
 
 amenity_schema = AmenitySchema()
 amenities_schema = AmenitySchema(many=True)

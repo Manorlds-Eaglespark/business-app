@@ -86,5 +86,5 @@ class Imgur(object):
 
     def allowed_file(self, filename):
         ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
-        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        return '.' in filename and filename.rstrip("\'").split('.')[-1].lower() in ALLOWED_EXTENSIONS
         
