@@ -13,12 +13,11 @@ class User(db.Model):
     role = db.Column(db.String(20))
     time_added = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    def __init__(self, name, password, email, thumbnail, role):
-        self.name = name
+    def __init__(self, name, email, password):
         self.password = Bcrypt().generate_password_hash(password).decode()
         self.email = email
-        self.thumbnail = thumbnail
-        self.role = role
+        self.role = 'user'
+        self.name = name
 
     def save(self):
         db.session.add(self)
@@ -28,9 +27,15 @@ class User(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def add_image(self, image_url):
+        self.thumbnail = image_url
+        
+    def check_password(self, password):
+        return Bcrypt().check_password_hash(self.password, password)
+
 class UserSchema(ma.Schema):
     class Meta:
-        fields = ("name", "email", "thumbnail", "role", "time_added")
+        fields = ("name", "email", "phone",  "thumbnail", "role", "time_added")
 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
